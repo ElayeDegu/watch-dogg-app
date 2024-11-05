@@ -1,0 +1,60 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  password       String
+  name           String
+  role           Role     @default(CLIENT)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  Bookings       Booking[]
+}
+
+model Bodyguard {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  license        String?
+  verified       Boolean  @default(false)
+  rateHourly     Float
+  rateDaily      Float
+  rateWeekly     Float
+  yearsOfService Int
+  isArmed        Boolean
+  User           User     @relation(fields: [userId], references: [id])
+  Bookings       Booking[]
+}
+
+model Booking {
+  id              Int       @id @default(autoincrement())
+  clientId        Int
+  bodyguardId     Int
+  rate            Float
+  status          BookingStatus @default(PENDING)
+  startDate       DateTime
+  endDate         DateTime
+  Client          User      @relation("ClientBookings", fields: [clientId], references: [id])
+  Bodyguard       Bodyguard @relation(fields: [bodyguardId], references: [id])
+}
+
+enum Role {
+  CLIENT
+  BODYGUARD
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+}
